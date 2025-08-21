@@ -1,0 +1,166 @@
+{
+    "Domaine de définition": {
+        "description": "Apprendre à déterminer le domaine de définition des fonctions mathématiques.",
+        "niveaux": {
+            "1": {
+                "name": "Débutant",
+                "description": "Introduction aux notions de base.",
+                "objectives": [
+                    "Comprendre le concept de domaine de définition",
+                    "Identifier que le domaine est R pour les polynômes",
+                    "Écrire correctement le domaine de définition"
+                ],
+                "example_functions": [
+                    "f(x) = x^2 - 3x + 1"
+                ]
+            },
+            "2": {
+                "name": "Élémentaire",
+                "description": "Approfondissement des concepts.",
+                "objectives": [
+                    "Identifier le dénominateur d'une fraction",
+                    "Trouver les valeurs qui annulent le dénominateur",
+                    "Exclure les valeurs interdites simples"
+                ],
+                "example_functions": [
+                    "f(x) = (7x - 1)/(x - 6)"
+                ]
+            },
+            "3": {
+                "name": "Intermédiaire",
+                "description": "Gestion de multiples valeurs interdites et expressions complexes.",
+                "objectives": [
+                    "Résoudre des équations du second degré au dénominateur",
+                    "Gérer plusieurs valeurs interdites",
+                    "Manipuler des expressions algébriques complexes"
+                ],
+                "example_functions": [
+                    "f(x) = (3x - 2) / (x^2 - 4x + 1)"
+                ]
+            },
+            "4": {
+                "name": "Avancé",
+                "description": "Conditions de positivité et inéquations.",
+                "objectives": [
+                    "Comprendre la condition de positivité sous une racine",
+                    "Résoudre des inéquations simples",
+                    "Déterminer le domaine avec une seule racine"
+                ],
+                "example_functions": [
+                    "f(x) = √(2x + 3) - 1"
+                ]
+            },
+            "5": {
+                "name": "Expert",
+                "description": "Combinaison de fractions et racines dans des cas complexes.",
+                "objectives": [
+                    "Combiner fractions et racines",
+                    "Gérer plusieurs racines simultanément",
+                    "Résoudre des cas complexes mixtes"
+                ],
+                "example_functions": [
+                    "f(x) = √((x^2 - 4)/(x - 1))"
+                ]
+            }
+        }
+    },
+    "Calcul des limites": {
+        "description": "Maîtriser le calcul des limites de fonctions.",
+        "niveaux": {
+            "1": {
+                "name": "Introduction",
+                "description": "Les bases du calcul des limites.",
+                "objectives": [
+                    "Comprendre la notion de limite",
+                    "Calculer la limite d'une fonction polynomiale en un point",
+                    "Calculer des limites simples"
+                ],
+                "example_functions": [
+                    "lim(x→+∞) (x^2 + 3x + 2)",
+                    "lim(x→2) (3x^2 - 4x + 1)",
+                    "lim(x→-∞) (-2x^3 + x - 5)"
+                ]
+            },
+            "2": {
+                "name": "Limites de fractions rationnelles",
+                "description": "Techniques de calcul pour les fractions.",
+                "objectives": [
+                    "Simplifier des expressions rationnelles",
+                    "Utiliser la factorisation",
+                    "Comparer les degrés"
+                ],
+                "example_functions": [
+                    "lim(x→1) (x^2 - 1)/(x - 1)",
+                    "lim(x→+∞) (2x^3 + x)/(3x^3 + 2)"
+                ]
+            },
+            "3": {
+                "name": "Forme 0/0 basique",
+                "description": "Résolution des formes indéterminées",
+                "objectives": [
+                    "Identifier la forme indéterminée 0/0",
+                    "Appliquer la factorisation simple",
+                    "Simplifier les expressions rationnelles"
+                ],
+                "example_functions": [
+                    "lim(x→2) (x^2 - 4)/(x - 2)",
+                    "lim(x→1) (x^3 - 1)/(x - 1)",
+                    "lim(x→0) sin(x)/x"
+                ]
+            },
+            "4": {
+                "name": "Forme ∞/∞",
+                "description": "Étude des quotients à l'infini",
+                "objectives": [
+                    "Identifier la forme indéterminée ∞/∞",
+                    "Diviser par le plus haut degré",
+                    "Analyser les termes dominants"
+                ],
+                "example_functions": [
+                    "lim(x→∞) (x^2 + 1)/(x + 1)",
+                    "lim(x→∞) (3x^3 + x)/(2x^3 - 4)",
+                    "lim(x→-∞) (x^2 + x)/(x^2 - 1)"
+                ]
+            },
+            "5": {
+                "name": "Forme ∞-∞",
+                "description": "Différence de termes infinis",
+                "objectives": [
+                    "Reconnaître une différence de termes infinis",
+                    "Appliquer la méthode de rationalisation",
+                    "Factoriser après rationalisation"
+                ],
+                "example_functions": [
+                    "lim(x→∞) (√(x^2 + 1) - x)",
+                    "lim(x→∞) (√(x^2 + x) - x)"
+                ]
+            },
+            "6": {
+                "name": "Formes trigonométriques",
+                "description": "Calcul des limites impliquant des fonctions trigonométriques.",
+                "objectives": [
+                    "Évaluer les limites contenant des fonctions trigonométriques de base",
+                    "Appliquer des identités trigonométriques dans le calcul des limites",
+                    "Gérer les formes indéterminées avec des expressions trigonométriques"
+                ],
+                "example_functions": [
+                    "lim(x→0) sin(x)/x",
+                    "lim(x→0) (1 - cos(x))/x^2"
+                ]
+            },
+            "7": {
+                "name": "Cas composés",
+                "description": "Évaluation des limites de fonctions composites et mixtes.",
+                "objectives": [
+                    "Évaluer les limites de fonctions composites",
+                    "Appliquer plusieurs lois de limites dans des scénarios complexes",
+                    "Gérer les formes indéterminées mixtes"
+                ],
+                "example_functions": [
+                    "lim(x→∞) x·sin(1/x)",
+                    "lim(x→0) (1 - cos(x))/x^2"
+                ]
+            }
+        }
+    }
+}

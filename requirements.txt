@@ -1,0 +1,12 @@
+crewai
+langchain-groq
+pydantic
+chromadb
+pandas
+rich
+python-dotenv
+sympy
+matplotlib
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
