@@ -36,6 +36,21 @@ class ProgressResponse(BaseModel):
     completed: int
     current_objective: Optional[str] = None
     objectives_completed: List[str] = []
+class ProgressionStatus(BaseModel):
+    total_objectives: int
+    completed_objectives: int
+    current_objective: Optional[str]
+    progress_percentage: float
+    current_level: int
+    ready_to_advance: bool
+    next_objective: Optional[str]
+    recent_success_rate: float
+
+class ProgressionResult(BaseModel):
+    progression_occurred: bool
+    message: str
+    new_objective: Optional[str] = None
+    new_level: Optional[int] = None
 
 # Initialisation FastAPI
 app = FastAPI(
@@ -173,17 +188,16 @@ async def generate_similar_exercise(original_exercise: Exercise):
         print(f"Erreur génération exercice similaire: {str(e)}")  # Log pour debug
         raise HTTPException(status_code=500, detail=f"Erreur génération exercice similaire: {str(e)}")
 
-@app.post("/exercises/evaluate", response_model=EvaluationResult)
-async def evaluate_answer(submission: AnswerSubmission):
-    """Évaluer la réponse d'un étudiant"""
+@app.post("/exercises/evaluate", response_model=dict)  # Changer le type de retour
+async def evaluate_answer_with_progression(submission: AnswerSubmission):
+    """Évaluer la réponse d'un étudiant avec vérification automatique de progression"""
     try:
         math_system.set_current_student(submission.student_id)
         evaluation = math_system.evaluate_response(submission.exercise, submission.answer)
         
-        # Vérification et sauvegarde dans l'historique de l'étudiant avec gestion d'erreur
+        # Sauvegarder dans l'historique
         try:
             if math_system.current_student:
-                # S'assurer que learning_history existe
                 if not hasattr(math_system.current_student, 'learning_history'):
                     math_system.current_student.learning_history = []
                 
@@ -191,18 +205,23 @@ async def evaluate_answer(submission: AnswerSubmission):
                     "exercise": submission.exercise.exercise,
                     "answer": submission.answer,
                     "evaluation": evaluation.is_correct,
-                    "timestamp": datetime.now().isoformat()  # Format ISO pour la sérialisation
+                    "timestamp": datetime.now().isoformat()
                 }
                 math_system.current_student.learning_history.append(history_item)
                 math_system.student_manager.save_student(math_system.current_student)
         except Exception as history_error:
             print(f"Erreur sauvegarde historique: {str(history_error)}")
-            # On continue même si la sauvegarde de l'historique échoue
         
-        return evaluation
+        # Vérifier la progression automatiquement
+        progression_result = math_system.auto_check_and_advance()
+        
+        return {
+            "evaluation": evaluation.dict(),
+            "progression": progression_result
+        }
+        
     except Exception as e:
-        print(f"Erreur évaluation réponse: {str(e)}")  # Log pour debug
-        raise HTTPException(status_code=500, detail=f"Erreur évaluation réponse: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur évaluation avec progression: {str(e)}")
 
 # ===================== COACH PERSONNEL =====================
 
@@ -337,6 +356,64 @@ async def global_exception_handler(request, exc):
     traceback.print_exc()
     return HTTPException(status_code=500, detail="Erreur interne du serveur")
 
+@app.get("/students/{student_id}/progression-status", response_model=ProgressionStatus)
+async def get_progression_status(student_id: str):
+    """Récupérer le statut de progression détaillé d'un étudiant"""
+    try:
+        math_system.set_current_student(student_id)
+        status = math_system.get_progression_status()
+        
+        if "error" in status:
+            raise HTTPException(status_code=404, detail=status["error"])
+        
+        return ProgressionStatus(**status)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur récupération statut: {str(e)}")
+
+@app.post("/students/{student_id}/advance-objective", response_model=ProgressionResult)
+async def advance_student_objective(student_id: str):
+    """Faire progresser manuellement un étudiant vers l'objectif suivant"""
+    try:
+        math_system.set_current_student(student_id)
+        
+        # Vérifier si l'étudiant peut progresser
+        if not math_system.check_objective_completion():
+            return ProgressionResult(
+                progression_occurred=False,
+                message="L'étudiant n'a pas encore rempli les critères pour passer à l'objectif suivant."
+            )
+        
+        # Faire progresser
+        if math_system.advance_to_next_objective():
+            return ProgressionResult(
+                progression_occurred=True,
+                message="Progression vers l'objectif suivant réussie !",
+                new_objective=math_system.current_student.current_objective,
+                new_level=math_system.current_student.level
+            )
+        else:
+            return ProgressionResult(
+                progression_occurred=False,
+                message="Tous les objectifs ont été complétés !"
+            )
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur progression: {str(e)}")
+
+@app.get("/students/{student_id}/check-completion")
+async def check_objective_completion(student_id: str):
+    """Vérifier si un étudiant peut passer à l'objectif suivant"""
+    try:
+        math_system.set_current_student(student_id)
+        can_advance = math_system.check_objective_completion()
+        
+        return {
+            "can_advance": can_advance,
+            "recent_success_rate": math_system._calculate_recent_success_rate(),
+            "exercises_completed": len(math_system.current_student.learning_history) if math_system.current_student else 0
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur vérification completion: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(

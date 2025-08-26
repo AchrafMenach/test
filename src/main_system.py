@@ -22,6 +22,7 @@ from src.tasks.evaluation_task import EvaluationTask
 from src.tools.file_processor import FileProcessor
 from src.config.learning_objectives import LearningObjectives
 from src.student_manager import StudentManager
+from langchain_community.chat_models import ChatOllama
 
 load_dotenv()
 
@@ -245,11 +246,11 @@ class MathTutoringSystem:
             console.print(f"Niveau non trouvé: {self.current_student.level}")
             return None
 
-        # Exercice par défaut en cas d'échec
+        # Exercice par défaut en cas d'échec avec délimiteurs mathématiques
         default_exercise = Exercise(
-            exercise=f"Résoudre: {level_info['example_functions'][0]}",
-            solution=f"Solution: {level_info['objectives'][0]}",
-            hints=["Appliquez les méthodes appropriées"],
+            exercise=f"Résoudre l'équation suivante: $x + 5 = 12$",
+            solution=f"Pour résoudre $x + 5 = 12$, on soustrait 5 des deux côtés: $x = 12 - 5 = 7$",
+            hints=["Isolez la variable x", "Utilisez les opérations inverses"],
             difficulty=level_info["name"],
             concept=self.current_student.current_objective
         )
@@ -258,10 +259,10 @@ class MathTutoringSystem:
             return default_exercise
 
         try:
-            # Prompt amélioré avec instructions très claires
+            # Prompt amélioré avec instructions très claires pour les délimiteurs mathématiques
             task = Task(
                 description=f"""
-Tu dois créer un exercice de mathématiques au format JSON STRICT sans erreur.
+Tu dois créer un exercice de mathématiques au format JSON STRICT avec expressions mathématiques correctement délimitées.
 
 CONTEXTE:
 - Objectif: {objective_data["description"]}
@@ -269,34 +270,42 @@ CONTEXTE:
 - Type: {self.current_student.current_objective}
 - Exemple basé sur: {level_info["example_functions"][0] if level_info.get("example_functions") else "fonctions de base"}
 
-RÈGLES STRICTES POUR LE JSON:
-1. UTILISE TOUJOURS des doubles backslashes pour LaTeX: \\\\frac{{a}}{{b}}, \\\\sqrt{{x}}, \\\\mathbb{{R}}
-2. PAS de backslashes simples dans le JSON
-3. Utilise des accolades doubles pour les paramètres LaTeX: {{a}}, {{b}}
-4. Teste mentalement que le JSON est valide
+RÈGLES STRICTES POUR LES EXPRESSIONS MATHÉMATIQUES:
+1. TOUJOURS encadrer les expressions mathématiques avec des délimiteurs:
+   - Pour les expressions INLINE: $expression$ (un seul dollar de chaque côté)
+   - Pour les expressions EN BLOC: $$expression$$ (deux dollars de chaque côté)
+2. Exemples corrects:
+   - Inline: "Résoudre $x^2 + 3x - 4 = 0$"
+   - Bloc: "La dérivée est: $$f'(x) = 2x + 3$$"
+3. UTILISE des doubles backslashes pour LaTeX: \\\\frac{{a}}{{b}}, \\\\sqrt{{x}}
+4. PAS de backslashes simples dans le JSON
+5. Accolades doubles pour paramètres: {{a}}, {{b}}
 
 FORMAT EXACT REQUIS:
 {{
-  "exercise": "Énoncé de l'exercice avec LaTeX correctement échappé",
-  "solution": "Solution étape par étape détaillée",
-  "hints": ["Indice 1", "Indice 2", "Indice 3"],
+  "exercise": "Énoncé avec expressions mathématiques délimitées par $ ou $$",
+  "solution": "Solution détaillée avec expressions mathématiques délimitées",
+  "hints": ["Indice 1 avec $math$ si nécessaire", "Indice 2", "Indice 3"],
   "difficulty": "{level_info["name"]}",
   "concept": "{self.current_student.current_objective}"
 }}
 
 EXEMPLE CORRECT:
 {{
-  "exercise": "Calculer la dérivée de f(x) = \\\\frac{{x^2 + 1}}{{x - 2}}",
-  "solution": "Utilisons la règle du quotient: si f(x) = \\\\frac{{u(x)}}{{v(x)}}, alors f'(x) = \\\\frac{{u'(x)v(x) - u(x)v'(x)}}{{[v(x)]^2}}. Ici u(x) = x^2 + 1, donc u'(x) = 2x. Et v(x) = x - 2, donc v'(x) = 1. Par conséquent: f'(x) = \\\\frac{{2x(x-2) - (x^2+1)(1)}}{{(x-2)^2}} = \\\\frac{{2x^2 - 4x - x^2 - 1}}{{(x-2)^2}} = \\\\frac{{x^2 - 4x - 1}}{{(x-2)^2}}",
-  "hints": ["Utilisez la règle du quotient", "Identifiez u(x) et v(x)", "Calculez u'(x) et v'(x) séparément"],
+  "exercise": "Calculer la dérivée de la fonction $f(x) = \\\\frac{{x^2 + 1}}{{x - 2}}$",
+  "solution": "Utilisons la règle du quotient: si $f(x) = \\\\frac{{u(x)}}{{v(x)}}$, alors $$f'(x) = \\\\frac{{u'(x)v(x) - u(x)v'(x)}}{{[v(x)]^2}}$$ Ici $u(x) = x^2 + 1$, donc $u'(x) = 2x$. Et $v(x) = x - 2$, donc $v'(x) = 1$. Par conséquent: $$f'(x) = \\\\frac{{2x(x-2) - (x^2+1)(1)}}{{(x-2)^2}} = \\\\frac{{x^2 - 4x - 1}}{{(x-2)^2}}$$",
+  "hints": ["Utilisez la règle du quotient: $\\\\frac{{d}}{{dx}}[\\\\frac{{u}}{{v}}] = \\\\frac{{u'v - uv'}}{{v^2}}$", "Identifiez $u(x) = x^2 + 1$ et $v(x) = x - 2$", "Calculez $u'(x)$ et $v'(x)$ séparément"],
   "difficulty": "Intermédiaire",
   "concept": "Dérivées"
 }}
 
-IMPORTANT: Réponds UNIQUEMENT avec le JSON, aucun texte supplémentaire.
+IMPORTANT: 
+- Réponds UNIQUEMENT avec le JSON valide
+- N'oublie JAMAIS les délimiteurs $ pour les expressions mathématiques
+- Teste mentalement que chaque expression mathématique est bien encadrée
                 """,
                 agent=self.exercise_creator_agent,
-                expected_output="JSON valide uniquement"
+                expected_output="JSON valide avec expressions mathématiques correctement délimitées"
             )
 
             crew = Crew(
@@ -344,7 +353,7 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, aucun texte supplémentaire.
             
             task = Task(
                 description=f"""
-Crée un exercice SIMILAIRE basé sur l'exercice original ci-dessous.
+Crée un exercice SIMILAIRE basé sur l'exercice original ci-dessous, avec expressions mathématiques correctement délimitées.
 
 EXERCICE ORIGINAL:
 Énoncé: {original_exercise.exercise}
@@ -356,24 +365,33 @@ OBJECTIF:
 - Niveau cible: {level_name}
 - Garder le même concept mathématique: {original_exercise.concept}
 
-RÈGLES STRICTES POUR LE JSON:
-1. UTILISE TOUJOURS des doubles backslashes pour LaTeX: \\\\frac{{a}}{{b}}, \\\\sqrt{{x}}
-2. Accolades doubles pour paramètres: {{a}}, {{b}}
-3. JSON parfaitement valide
+RÈGLES STRICTES POUR LES EXPRESSIONS MATHÉMATIQUES:
+1. TOUJOURS encadrer les expressions mathématiques:
+   - Expressions INLINE: $expression$
+   - Expressions EN BLOC: $$expression$$
+2. UTILISE des doubles backslashes pour LaTeX: \\\\frac{{a}}{{b}}, \\\\sqrt{{x}}
+3. Accolades doubles pour paramètres: {{a}}, {{b}}
+4. JSON parfaitement valide
 
 FORMAT EXACT:
 {{
-  "exercise": "Nouvel énoncé avec valeurs différentes",
-  "solution": "Solution détaillée étape par étape",
-  "hints": ["Indice 1", "Indice 2", "Indice 3"],
+  "exercise": "Nouvel énoncé avec expressions mathématiques délimitées par $ ou $$",
+  "solution": "Solution détaillée avec expressions mathématiques délimitées",
+  "hints": ["Indice 1 avec $math$ si nécessaire", "Indice 2", "Indice 3"],
   "difficulty": "{original_exercise.difficulty}",
   "concept": "{original_exercise.concept}"
 }}
 
-IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, aucun autre texte.
+EXEMPLE:
+Si l'original était: "Dériver $f(x) = x^2 + 3x$"
+Le similaire pourrait être: "Dériver $g(x) = 2x^3 - 5x + 1$"
+
+IMPORTANT: 
+- Réponds UNIQUEMENT avec le JSON valide
+- N'oublie JAMAIS les délimiteurs $ pour les expressions mathématiques
                 """,
                 agent=self.exercise_creator_agent,
-                expected_output="JSON valide d'exercice similaire"
+                expected_output="JSON valide d'exercice similaire avec expressions mathématiques délimitées"
             )
             
             crew = Crew(
@@ -445,25 +463,34 @@ RÉPONSE ÉTUDIANT: {extracted_text}
 ÉVALUATION REQUISE:
 1. La réponse est-elle correcte ? (true/false)
 2. Quel type d'erreur si incorrecte ?
-3. Feedback pédagogique constructif
-4. Explication détaillée de la solution
-5. Correction étape par étape
+3. Feedback pédagogique constructif avec expressions mathématiques délimitées
+4. Explication détaillée de la solution avec expressions mathématiques délimitées
+5. Correction étape par étape avec expressions mathématiques délimitées
 6. Recommandations pour l'amélioration
+
+RÈGLES POUR LES EXPRESSIONS MATHÉMATIQUES:
+- TOUJOURS encadrer les expressions mathématiques:
+  - Expressions INLINE: $expression$
+  - Expressions EN BLOC: $$expression$$
+- Doubles backslashes pour LaTeX: \\\\frac{{a}}{{b}}, \\\\sqrt{{x}}
 
 FORMAT JSON EXACT:
 {{
   "is_correct": true/false,
   "error_type": "Type d'erreur spécifique ou null si correct",
-  "feedback": "Feedback pédagogique détaillé et constructif",
-  "detailed_explanation": "Explication mathématique complète de la solution",
-  "step_by_step_correction": "Correction détaillée étape par étape",
+  "feedback": "Feedback pédagogique avec expressions mathématiques délimitées par $ ou $$",
+  "detailed_explanation": "Explication mathématique complète avec expressions délimitées",
+  "step_by_step_correction": "Correction détaillée avec expressions mathématiques délimitées",
   "recommendations": ["Recommandation 1", "Recommandation 2", "Recommandation 3"]
 }}
 
-IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, aucun texte supplémentaire.
+EXEMPLE de feedback avec math:
+"feedback": "Votre approche est correcte mais vous avez fait une erreur dans le calcul de $\\\\frac{{d}}{{dx}}[x^2] = 2x$. La dérivée finale devrait être $f'(x) = 2x + 3$."
+
+IMPORTANT: Réponds UNIQUEMENT avec le JSON valide avec expressions mathématiques correctement délimitées.
                 """,
                 agent=self.evaluator_agent,
-                expected_output="Évaluation détaillée au format JSON"
+                expected_output="Évaluation détaillée au format JSON avec expressions mathématiques délimitées"
             )
             
             crew = Crew(
@@ -546,6 +573,8 @@ COMPOSANTS REQUIS:
 3. Astuce pratique pour améliorer les performances en mathématiques
 4. Phrases d'encouragement positives et motivantes
 
+Si tu inclus des expressions mathématiques, encadre-les avec $ pour inline ou $$ pour bloc.
+
 FORMAT JSON EXACT:
 {
   "motivation": "Message motivant et inspirant personnalisé",
@@ -583,6 +612,325 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, aucun texte supplémentaire.
         except Exception as e:
             console.print(f"Erreur génération message coach: {str(e)}")
             return self._create_fallback_coaching()
+        
+    def check_objective_completion(self) -> bool:
+        """
+        Vérifie si l'étudiant a terminé son objectif actuel
+        Critères : nombre d'exercices réussis, progression dans les niveaux, etc.
+        """
+        if not self.current_student or not self.current_student.current_objective:
+            return False
+        
+        # Analyser l'historique d'apprentissage récent
+        recent_exercises = self.current_student.learning_history[-10:]  # 10 derniers exercices
+        if len(recent_exercises) < 5:  # Pas assez d'exercices pour évaluer
+            return False
+        
+        # Calculer le taux de réussite récent
+        correct_answers = sum(1 for ex in recent_exercises if ex.get('evaluation', False))
+        success_rate = correct_answers / len(recent_exercises)
+        
+        # Critères de completion (ajustables)
+        if success_rate >= 0.8:  # 80% de réussite sur les derniers exercices
+            return True
+        
+        return False
+
+    def advance_to_next_objective(self) -> bool:
+        """
+        Fait passer l'étudiant à l'objectif suivant
+        Retourne True si la progression a eu lieu, False sinon
+        """
+        if not self.current_student or not self.current_student.current_objective:
+            return False
+        
+        # Ajouter l'objectif actuel aux objectifs complétés
+        current_obj = self.current_student.current_objective
+        if current_obj not in self.current_student.objectives_completed:
+            self.current_student.objectives_completed.append(current_obj)
+        
+        # Trouver l'index de l'objectif actuel
+        try:
+            current_index = self.learning_objectives.objectives_order.index(current_obj)
+        except ValueError:
+            console.print(f"Objectif actuel non trouvé dans l'ordre: {current_obj}")
+            return False
+        
+        # Vérifier s'il y a un objectif suivant
+        if current_index + 1 < len(self.learning_objectives.objectives_order):
+            next_objective = self.learning_objectives.objectives_order[current_index + 1]
+            self.current_student.current_objective = next_objective
+            
+            # Optionnel : augmenter le niveau si approprié
+            if self.current_student.level < 4:  # Maximum niveau 4
+                self.current_student.level += 1
+            
+            # Sauvegarder les changements
+            self.student_manager.save_student(self.current_student)
+            
+            console.print(f"✅ Progression vers: {next_objective} (Niveau {self.current_student.level})")
+            return True
+        else:
+            # Tous les objectifs sont terminés
+            self.current_student.current_objective = None
+            self.student_manager.save_student(self.current_student)
+            console.print("🎉 Tous les objectifs ont été complétés !")
+            return False
+
+    def get_progression_status(self) -> dict:
+        """
+        Retourne le statut de progression détaillé
+        """
+        if not self.current_student:
+            return {"error": "Aucun étudiant sélectionné"}
+        
+        total_objectives = len(self.learning_objectives.objectives_order)
+        completed_count = len(self.current_student.objectives_completed)
+        current_obj = self.current_student.current_objective
+        
+        # Calculer le pourcentage de progression
+        if current_obj and current_obj in self.learning_objectives.objectives_order:
+            current_index = self.learning_objectives.objectives_order.index(current_obj)
+            progress_percentage = (completed_count / total_objectives) * 100
+        else:
+            progress_percentage = (completed_count / total_objectives) * 100
+        
+        # Vérifier si prêt pour la progression
+        ready_to_advance = self.check_objective_completion()
+        
+        return {
+            "total_objectives": total_objectives,
+            "completed_objectives": completed_count,
+            "current_objective": current_obj,
+            "progress_percentage": round(progress_percentage, 1),
+            "current_level": self.current_student.level,
+            "ready_to_advance": ready_to_advance,
+            "next_objective": self._get_next_objective(),
+            "recent_success_rate": self._calculate_recent_success_rate()
+        }
+
+    def _get_next_objective(self) -> str:
+        """Retourne le prochain objectif ou None si terminé"""
+        if not self.current_student or not self.current_student.current_objective:
+            return None
+        
+        try:
+            current_index = self.learning_objectives.objectives_order.index(
+                self.current_student.current_objective
+            )
+            if current_index + 1 < len(self.learning_objectives.objectives_order):
+                return self.learning_objectives.objectives_order[current_index + 1]
+        except (ValueError, IndexError):
+            pass
+        
+        return None
+
+    def _calculate_recent_success_rate(self) -> float:
+        """Calcule le taux de réussite récent"""
+        if not self.current_student or not self.current_student.learning_history:
+            return 0.0
+        
+        recent_exercises = self.current_student.learning_history[-10:]
+        if not recent_exercises:
+            return 0.0
+        
+        correct_count = sum(1 for ex in recent_exercises if ex.get('evaluation', False))
+        return round((correct_count / len(recent_exercises)) * 100, 1)
+
+    def auto_check_and_advance(self) -> dict:
+        """
+        Vérifie automatiquement et fait progresser l'étudiant si les critères sont remplis
+        Utilisé après chaque évaluation d'exercice
+        """
+        result = {
+            "progression_occurred": False,
+            "message": "",
+            "new_objective": None,
+            "new_level": None
+        }
+        
+        if self.check_objective_completion():
+            if self.advance_to_next_objective():
+                result["progression_occurred"] = True
+                result["message"] = "Félicitations ! Vous avez terminé cet objectif et progressé vers le suivant."
+                result["new_objective"] = self.current_student.current_objective
+                result["new_level"] = self.current_student.level
+            else:
+                result["message"] = "Félicitations ! Vous avez terminé tous les objectifs du programme !"
+        
+        return result
+
+    # Nouvelles méthodes pour l'interface web
+    def generate_exercise_for_api(self, student_id: str) -> dict:
+        """
+        Version API de génération d'exercice qui retourne un dictionnaire compatible avec l'interface web
+        """
+        self.set_current_student(student_id)
+        exercise = self.generate_exercise()
+        
+        if not exercise:
+            return {
+                "error": "Impossible de générer un exercice",
+                "exercise": None
+            }
+        
+        # Retourner dans le format attendu par l'interface
+        return {
+            "exercise": exercise.exercise,
+            "solution": exercise.solution,
+            "hints": exercise.hints,
+            "difficulty": exercise.difficulty,
+            "concept": exercise.concept,
+            "context": None,  # Peut être ajouté plus tard si nécessaire
+            "objective": self.current_student.current_objective if self.current_student else None
+        }
+
+    def generate_similar_exercise_for_api(self, original_exercise_data: dict) -> dict:
+        """
+        Version API de génération d'exercice similaire
+        """
+        if not self.current_student:
+            return {
+                "error": "Aucun étudiant sélectionné",
+                "exercise": None
+            }
+        
+        # Créer un objet Exercise à partir des données
+        original_exercise = Exercise(
+            exercise=original_exercise_data.get("exercise", ""),
+            solution=original_exercise_data.get("solution", ""),
+            hints=original_exercise_data.get("hints", []),
+            difficulty=original_exercise_data.get("difficulty", ""),
+            concept=original_exercise_data.get("concept", "")
+        )
+        
+        similar_exercise = self.generate_similar_exercise(original_exercise)
+        
+        if not similar_exercise:
+            return {
+                "error": "Impossible de générer un exercice similaire",
+                "exercise": None
+            }
+        
+        return {
+            "exercise": similar_exercise.exercise,
+            "solution": similar_exercise.solution,
+            "hints": similar_exercise.hints,
+            "difficulty": similar_exercise.difficulty,
+            "concept": similar_exercise.concept,
+            "context": None,
+            "objective": self.current_student.current_objective if self.current_student else None
+        }
+
+    def evaluate_answer_for_api(self, exercise_data: dict, answer: str, student_id: str) -> dict:
+        """
+        Version API d'évaluation d'une réponse textuelle avec gestion de la progression
+        """
+        self.set_current_student(student_id)
+        
+        # Créer un objet Exercise à partir des données
+        exercise = Exercise(
+            exercise=exercise_data.get("exercise", ""),
+            solution=exercise_data.get("solution", ""),
+            hints=exercise_data.get("hints", []),
+            difficulty=exercise_data.get("difficulty", ""),
+            concept=exercise_data.get("concept", "")
+        )
+        
+        # Évaluer la réponse
+        evaluation = self.evaluate_response(exercise, answer)
+        
+        # Enregistrer dans l'historique de l'étudiant
+        if self.current_student:
+            self.current_student.learning_history.append({
+                "exercise": exercise.exercise,
+                "answer": answer,
+                "evaluation": evaluation.is_correct,
+                "timestamp": datetime.now().isoformat(),
+                "concept": exercise.concept
+            })
+            self.student_manager.save_student(self.current_student)
+        
+        # Vérifier la progression
+        progression_result = self.auto_check_and_advance()
+        
+        # Adapter le format de retour pour l'interface
+        api_result = {
+            "evaluation": {
+                "is_correct": evaluation.is_correct,
+                "feedback": evaluation.feedback if hasattr(evaluation, 'feedback') else evaluation.detailed_explanation,
+                "explanation": evaluation.detailed_explanation if hasattr(evaluation, 'detailed_explanation') else evaluation.feedback,
+                "correct_answer": exercise.solution,
+                "error_type": evaluation.error_type if hasattr(evaluation, 'error_type') else None,
+                "recommendations": evaluation.recommendations if hasattr(evaluation, 'recommendations') else []
+            }
+        }
+        
+        # Ajouter les informations de progression si applicable
+        if progression_result["progression_occurred"]:
+            api_result["progression"] = {
+                "level_up": True,
+                "new_objective": progression_result["new_objective"],
+                "new_level": progression_result["new_level"],
+                "message": progression_result["message"]
+            }
+        
+        return api_result
+
+    def evaluate_file_answer_for_api(self, exercise_data: dict, file_path: str, student_id: str) -> dict:
+        """
+        Version API d'évaluation d'une réponse fichier avec gestion de la progression
+        """
+        self.set_current_student(student_id)
+        
+        # Créer un objet Exercise à partir des données
+        exercise = Exercise(
+            exercise=exercise_data.get("exercise", ""),
+            solution=exercise_data.get("solution", ""),
+            hints=exercise_data.get("hints", []),
+            difficulty=exercise_data.get("difficulty", ""),
+            concept=exercise_data.get("concept", "")
+        )
+        
+        # Évaluer la réponse à partir du fichier
+        evaluation = self.evaluate_response(exercise, Path(file_path))
+        
+        # Enregistrer dans l'historique de l'étudiant
+        if self.current_student:
+            self.current_student.learning_history.append({
+                "exercise": exercise.exercise,
+                "answer": f"Fichier: {Path(file_path).name}",
+                "evaluation": evaluation.is_correct,
+                "timestamp": datetime.now().isoformat(),
+                "concept": exercise.concept
+            })
+            self.student_manager.save_student(self.current_student)
+        
+        # Vérifier la progression
+        progression_result = self.auto_check_and_advance()
+        
+        # Adapter le format de retour pour l'interface
+        api_result = {
+            "evaluation": {
+                "is_correct": evaluation.is_correct,
+                "feedback": evaluation.feedback if hasattr(evaluation, 'feedback') else evaluation.detailed_explanation,
+                "explanation": evaluation.detailed_explanation if hasattr(evaluation, 'detailed_explanation') else evaluation.feedback,
+                "correct_answer": exercise.solution,
+                "error_type": evaluation.error_type if hasattr(evaluation, 'error_type') else None,
+                "recommendations": evaluation.recommendations if hasattr(evaluation, 'recommendations') else []
+            }
+        }
+        
+        # Ajouter les informations de progression si applicable
+        if progression_result["progression_occurred"]:
+            api_result["progression"] = {
+                "level_up": True,
+                "new_objective": progression_result["new_objective"],
+                "new_level": progression_result["new_level"],
+                "message": progression_result["message"]
+            }
+        
+        return api_result
 
 
 if __name__ == "__main__":
@@ -603,33 +951,25 @@ if __name__ == "__main__":
             system.student_manager.save_student(system.current_student)
             console.print(f"✅ Objectif actuel défini: {system.current_student.current_objective}")
 
-        console.print("\n=== Génération d'Exercice ===")
-        # Generate an exercise
-        exercise = system.generate_exercise()
-        if exercise:
-            console.print(f"📝 Exercice généré:")
-            console.print(f"   Énoncé: {exercise.exercise}")
-            console.print(f"   Difficulté: {exercise.difficulty}")
-            console.print(f"   Concept: {exercise.concept}")
-            console.print(f"   Solution: {exercise.solution}")
-            console.print(f"   Indices: {exercise.hints}")
+        console.print("\n=== Test API - Génération d'Exercice ===")
+        # Test API exercise generation
+        exercise_result = system.generate_exercise_for_api(student.student_id)
+        if not exercise_result.get("error"):
+            console.print(f"📝 Exercice généré via API:")
+            console.print(f"   Énoncé: {exercise_result['exercise']}")
+            console.print(f"   Difficulté: {exercise_result['difficulty']}")
+            console.print(f"   Concept: {exercise_result['concept']}")
 
-            console.print("\n=== Génération d'Exercice Similaire ===")
-            # Generate a similar exercise
-            similar_exercise = system.generate_similar_exercise(exercise)
-            if similar_exercise:
-                console.print(f"📝 Exercice similaire généré:")
-                console.print(f"   Énoncé: {similar_exercise.exercise}")
-
-            console.print("\n=== Évaluation de Réponse ===")
-            # Simulate student answer
-            student_answer = "Je pense que la réponse est x = 5, mais je ne suis pas sûr des étapes."
-            evaluation = system.evaluate_response(exercise, student_answer)
-            console.print(f"📊 Évaluation de la réponse:")
-            console.print(f"   Correcte: {evaluation.is_correct}")
-            console.print(f"   Type d'erreur: {evaluation.error_type}")
-            console.print(f"   Feedback: {evaluation.feedback}")
-            console.print(f"   Explication: {evaluation.detailed_explanation[:100]}...")
+            console.print("\n=== Test API - Évaluation de Réponse ===")
+            # Test API answer evaluation
+            student_answer = "Je pense que la réponse est $x = 5$, mais je ne suis pas sûr des étapes."
+            eval_result = system.evaluate_answer_for_api(exercise_result, student_answer, student.student_id)
+            console.print(f"📊 Évaluation via API:")
+            console.print(f"   Correcte: {eval_result['evaluation']['is_correct']}")
+            console.print(f"   Feedback: {eval_result['evaluation']['feedback'][:100]}...")
+            
+            if eval_result.get("progression"):
+                console.print(f"🎉 Progression détectée: {eval_result['progression']['message']}")
 
         console.print("\n=== Message du Coach Personnel ===")
         # Get a personal coach message
