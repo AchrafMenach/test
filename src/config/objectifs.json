@@ -1,166 +1,900 @@
 {
-    "Domaine de définition": {
-        "description": "Apprendre à déterminer le domaine de définition des fonctions mathématiques.",
-        "niveaux": {
+  "meta": {
+    "title": "Smart Bac — Programme complet de Mathématiques (Maroc)",
+    "country": "MA",
+    "level": "Lycée — Baccalauréat",
+    "version": "2025-09-03",
+    "language": "fr",
+    "schema_version": "v1.0",
+    "notes": [
+      "Structure inspirée des progressions usuelles (Tronc commun → 1ère BAC → 2ème BAC) et des filières (SM A, SM B, SPC, SVT).",
+      "Chaque thème contient des objectifs progressifs (Débutant → Expert) compatibles avec le format des objectifs fournis par l’utilisateur."
+    ],
+    "sources_hint": [
+      "Portails pédagogiques marocains référençant les contenus par filière et niveau.",
+      "Références : Kezakoo (2BAC SM A), AlloSchool (2BAC SPC BIOF), AlloSchool (1ère BAC), Tronc Commun (BIOF)."
+    ]
+  },
+  "structure": {
+    "Tronc commun scientifique": {
+      "themes": {
+        "Logique et ensembles": {
+          "description": "Bases de logique, quantificateurs, connecteurs ; ensembles, inclusion, opérations, applications.",
+          "niveaux": {
             "1": {
-                "name": "Débutant",
-                "description": "Introduction aux notions de base.",
-                "objectives": [
-                    "Comprendre le concept de domaine de définition",
-                    "Identifier que le domaine est R pour les polynômes",
-                    "Écrire correctement le domaine de définition"
-                ],
-                "example_functions": [
-                    "f(x) = x^2 - 3x + 1"
-                ]
+              "name": "Débutant",
+              "description": "Notions élémentaires de logique et d’ensembles.",
+              "objectives": [
+                "Utiliser les connecteurs (¬, ∧, ∨, ⇒, ⇔) et les quantificateurs (∀, ∃).",
+                "Définir un ensemble par compréhension ou extension.",
+                "Effectuer des opérations ensemblistes : union, intersection, complément."
+              ],
+              "example_exercises": [
+                "Traduire en logique : « tout réel a un opposé unique ».",
+                "Simplifier (A ∪ B) ∩ (A ∪ B^c)."
+              ]
             },
             "2": {
-                "name": "Élémentaire",
-                "description": "Approfondissement des concepts.",
-                "objectives": [
-                    "Identifier le dénominateur d'une fraction",
-                    "Trouver les valeurs qui annulent le dénominateur",
-                    "Exclure les valeurs interdites simples"
-                ],
-                "example_functions": [
-                    "f(x) = (7x - 1)/(x - 6)"
-                ]
+              "name": "Intermédiaire",
+              "description": "Applications, images/antécédents, produits cartésiens.",
+              "objectives": [
+                "Définir une application, son graphe, son image, son noyau (si approprié).",
+                "Composer des applications et étudier l’injectivité/surjectivité/bijectivité."
+              ],
+              "example_exercises": [
+                "Montrer que f(x)=x^3 est bijective sur ℝ et construire f^{-1}.",
+                "Déterminer A×B pour A={1,2}, B={a,b,c}."
+              ]
             },
             "3": {
-                "name": "Intermédiaire",
-                "description": "Gestion de multiples valeurs interdites et expressions complexes.",
-                "objectives": [
-                    "Résoudre des équations du second degré au dénominateur",
-                    "Gérer plusieurs valeurs interdites",
-                    "Manipuler des expressions algébriques complexes"
-                ],
-                "example_functions": [
-                    "f(x) = (3x - 2) / (x^2 - 4x + 1)"
-                ]
-            },
-            "4": {
-                "name": "Avancé",
-                "description": "Conditions de positivité et inéquations.",
-                "objectives": [
-                    "Comprendre la condition de positivité sous une racine",
-                    "Résoudre des inéquations simples",
-                    "Déterminer le domaine avec une seule racine"
-                ],
-                "example_functions": [
-                    "f(x) = √(2x + 3) - 1"
-                ]
-            },
-            "5": {
-                "name": "Expert",
-                "description": "Combinaison de fractions et racines dans des cas complexes.",
-                "objectives": [
-                    "Combiner fractions et racines",
-                    "Gérer plusieurs racines simultanément",
-                    "Résoudre des cas complexes mixtes"
-                ],
-                "example_functions": [
-                    "f(x) = √((x^2 - 4)/(x - 1))"
-                ]
+              "name": "Avancé",
+              "description": "Propriétés logiques et raisonnement.",
+              "objectives": [
+                "Maîtriser contraposée, réciproque, raisonnement par l’absurde.",
+                "Rédiger une implication en utilisant un schéma logique correct."
+              ],
+              "example_exercises": [
+                "Prouver par contraposée : si x^2 est pair alors x est pair."
+              ]
             }
-        }
-    },
-    "Calcul des limites": {
-        "description": "Maîtriser le calcul des limites de fonctions.",
-        "niveaux": {
+          }
+        },
+        "Arithmétique de base (N, Z, Q, R)": {
+          "description": "Ensembles de nombres, ordre sur ℝ, valeur absolue, intervalles ; arithmétique dans ℕ.",
+          "niveaux": {
             "1": {
-                "name": "Introduction",
-                "description": "Les bases du calcul des limites.",
-                "objectives": [
-                    "Comprendre la notion de limite",
-                    "Calculer la limite d'une fonction polynomiale en un point",
-                    "Calculer des limites simples"
-                ],
-                "example_functions": [
-                    "lim(x→+∞) (x^2 + 3x + 2)",
-                    "lim(x→2) (3x^2 - 4x + 1)",
-                    "lim(x→-∞) (-2x^3 + x - 5)"
-                ]
+              "name": "Débutant",
+              "description": "Nombres et ordre.",
+              "objectives": [
+                "Repérer et comparer des nombres réels, manipuler les intervalles.",
+                "Utiliser la valeur absolue et ses propriétés simples."
+              ],
+              "example_exercises": [
+                "Résoudre |x-3|≤2.",
+                "Interpréter I=[-1,2[∩]0,4]."
+              ]
             },
             "2": {
-                "name": "Limites de fractions rationnelles",
-                "description": "Techniques de calcul pour les fractions.",
-                "objectives": [
-                    "Simplifier des expressions rationnelles",
-                    "Utiliser la factorisation",
-                    "Comparer les degrés"
-                ],
-                "example_functions": [
-                    "lim(x→1) (x^2 - 1)/(x - 1)",
-                    "lim(x→+∞) (2x^3 + x)/(3x^3 + 2)"
-                ]
+              "name": "Intermédiaire",
+              "description": "Arithmétique dans ℕ.",
+              "objectives": [
+                "Divisibilité, PGCD/PPCM, algorithme d’Euclide.",
+                "Décompositions premières, critères de divisibilité."
+              ],
+              "example_exercises": [
+                "Calculer gcd(420, 196) par l’algorithme d’Euclide."
+              ]
+            }
+          }
+        },
+        "Polynômes, équations et inéquations": {
+          "description": "Polynômes du 1er et 2nd degré ; factorisation ; équations, inéquations et systèmes.",
+          "niveaux": {
+            "1": {
+              "name": "Débutant",
+              "description": "Résolution d’équations/inéquations du 1er degré.",
+              "objectives": [
+                "Résoudre ax+b=0 (a≠0).",
+                "Interpréter graphiquement une inéquation linéaire."
+              ],
+              "example_exercises": [
+                "Résoudre 3x-7≤2x+5."
+              ]
+            },
+            "2": {
+              "name": "Intermédiaire",
+              "description": "Second degré et factorisation.",
+              "objectives": [
+                "Utiliser Δ, racines, forme canonique ; signes d’un trinôme.",
+                "Factoriser par identité remarquable et racines réelles."
+              ],
+              "example_exercises": [
+                "Résoudre x^2-4x+1=0 et étudier le signe."
+              ]
+            }
+          }
+        },
+        "Vecteurs et géométrie plane (TCS)": {
+          "description": "Vecteurs, translations, coordonnées, projection, produit scalaire dans le plan (bases).",
+          "niveaux": {
+            "1": {
+              "name": "Débutant",
+              "description": "Opérations vectorielles et coordonnées.",
+              "objectives": [
+                "Somme, différence, multiplication par un scalaire.",
+                "Coordonnées dans un repère ; norme d’un vecteur."
+              ]
+            },
+            "2": {
+              "name": "Intermédiaire",
+              "description": "Projection et produit scalaire (introduction).",
+              "objectives": [
+                "Calculer une projection sur une droite.",
+                "Utiliser u·v = ||u||·||v||·cosθ pour des problèmes d’angles."
+              ]
+            }
+          }
+        }
+      }
+    },
+    "1ère année BAC — Sciences Mathématiques": {
+      "themes": {
+        "Logique, ensembles, applications": {
+          "description": "Logique, ensembles, applications et relations — approfondissement.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "description": "Logique et ensembles avancés.",
+              "objectives": [
+                "Preuves par équivalence, contraposée, disjonction de cas.",
+                "Relations d’équivalence et de préordre (aperçu)."
+              ]
+            },
+            "2": {
+              "name": "Intermédiaire",
+              "description": "Applications et bijections.",
+              "objectives": [
+                "Étudier injectivité/surjectivité ; construire la réciproque.",
+                "Composer des fonctions et établir des invariants simples."
+              ]
+            }
+          }
+        },
+        "Généralités sur les fonctions": {
+          "description": "Variations, tableaux de signes, compositions, réciproques (sur intervalles).",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Domaines de définition et images d’intervalles.",
+                "Fonctions usuelles : polynômes, rationnelles simples, racine n-ième."
+              ],
+              "example_functions": [
+                "f(x)=√(x-2), g(x)=(2x-1)/(x+3)"
+              ]
+            }
+          }
+        },
+        "Suites numériques": {
+          "description": "Suites arithmétiques/géométriques, variations, limites de suites.",
+          "niveaux": {
+            "1": {
+              "name": "Débutant",
+              "objectives": [
+                "Définir une suite par formule explicite ou récurrence.",
+                "Reconnaître suites arithmétiques/géométriques ; n-ième terme."
+              ]
+            },
+            "2": {
+              "name": "Intermédiaire",
+              "objectives": [
+                "Étudier la monotonie ; calculer des limites simples.",
+                "Sommes de suites géométriques finies."
+              ]
+            }
+          }
+        },
+        "Barycentre, produit scalaire (plan), trigonométrie": {
+          "description": "Barycentre ; produit scalaire ; cercle ; identités trigonométriques, formules d’angles.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Déterminer un barycentre de points pondérés.",
+                "Utiliser cos(a±b), sin(a±b), formules de duplication."
+              ]
+            }
+          }
+        },
+        "Limites et dérivation (1ère approche)": {
+          "description": "Notion de limite, opérations, formes indéterminées usuelles ; définition de la dérivée.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Calculer des limites par factorisation/rationalisation.",
+                "Définir f’(x0) et interpréter géométriquement (tangente)."
+              ]
+            }
+          }
+        },
+        "Rotation dans le plan & vecteurs de l’espace": {
+          "description": "Transformations dans le plan ; introduction aux vecteurs dans l’espace et à la géométrie 3D.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Utiliser les matrices 2×2 simples pour rotation (optionnel).",
+                "Repérer un point dans ℝ^3 ; vecteurs colinéaires et coplanaires."
+              ]
+            }
+          }
+        },
+        "Dénombrement (intro) & probabilités (intro)": {
+          "description": "Principe multiplicatif, arrangements, combinaisons ; expérience aléatoire simple.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Utiliser n!, A(n,k), C(n,k).",
+                "Probabilités sur un univers fini ; arbres pondérés."
+              ]
+            }
+          }
+        },
+        "Arithmétique dans Z (intro)": {
+          "description": "Divisibilité dans ℤ, algorithme d’Euclide, identités de Bézout, congruences (bases).",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Calculer PGCD ; écrire une identité de Bézout.",
+                "Résoudre des congruences linéaires simples mod n."
+              ]
+            }
+          }
+        }
+      }
+    },
+    "1ère année BAC — Sciences Expérimentales": {
+      "themes": {
+        "Logique et fonctions": {
+          "description": "Logique élémentaire ; généralités sur les fonctions et variations.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Domaine de définition, image, antécédent.",
+                "Lire et produire un tableau de variations."
+              ]
+            }
+          }
+        },
+        "Géométrie plane (barycentre, produit scalaire, cercle)": {
+          "description": "Barycentre, produit scalaire dans le plan, cercle et équations cartésiennes.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Calculer un barycentre dans le plan.",
+                "Utiliser le produit scalaire pour angles et distances."
+              ]
+            }
+          }
+        },
+        "Suites numériques": {
+          "description": "Suites usuelles, monotone, limites de suites.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Reconnaître et étudier suites arithmétiques/géométriques.",
+                "Calculer limites de suites simples."
+              ]
+            }
+          }
+        },
+        "Trigonométrie": {
+          "description": "Identités et équations trigonométriques de base.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Utiliser identités usuelles ; résoudre sinx=a, cosx=a sur des intervalles donnés."
+              ]
+            }
+          }
+        },
+        "Limites & dérivation (intro)": {
+          "description": "Notion de limite, dérivation et tangente.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Calculer des limites simples ; déterminer f’ pour fonctions usuelles."
+              ]
+            }
+          }
+        },
+        "Vecteurs de l’espace (intro)": {
+          "description": "Repérage dans l’espace ; droites et plans (aperçu).",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Équation cartésienne simple d’un plan ; condition de perpendicularité."
+              ]
+            }
+          }
+        },
+        "Dénombrement & probabilités (intro)": {
+          "description": "Arrangements, combinaisons ; probabilité sur univers fini.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Calculer C(n,k) ; utiliser un arbre de probabilité."
+              ]
+            }
+          }
+        }
+      }
+    },
+    "2ème année BAC — Sciences Mathématiques A": {
+      "themes": {
+        "Analyse — Limites, continuité, dérivation": {
+          "description": "Limites (∞, formes indéterminées), continuité, théorèmes (TVI), dérivation et étude complète de fonctions.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Calculer limites (0/0, ∞/∞, ∞-∞) par factorisation, rationalisation, comparaison.",
+                "Étudier les asymptotes et branches infinies."
+              ],
+              "example_functions": [
+                "lim x→∞ (√(x^2+x)-x)",
+                "Étude de f(x)=(x^3-3x+1)/(x-1)"
+              ]
+            },
+            "2": {
+              "name": "Intermédiaire",
+              "objectives": [
+                "Appliquer TVI, image d’un intervalle par une fonction continue et monotone.",
+                "Composer fonctions continues et dérivables ; réciproques sur intervalles."
+              ]
             },
             "3": {
-                "name": "Forme 0/0 basique",
-                "description": "Résolution des formes indéterminées",
-                "objectives": [
-                    "Identifier la forme indéterminée 0/0",
-                    "Appliquer la factorisation simple",
-                    "Simplifier les expressions rationnelles"
-                ],
-                "example_functions": [
-                    "lim(x→2) (x^2 - 4)/(x - 2)",
-                    "lim(x→1) (x^3 - 1)/(x - 1)",
-                    "lim(x→0) sin(x)/x"
-                ]
+              "name": "Avancé",
+              "objectives": [
+                "Convexité, points d’inflexion ; optimisation sur un intervalle.",
+                "Techniques de preuve d’inégalités via dérivées."
+              ]
+            }
+          }
+        },
+        "Analyse — Primitives & intégrales": {
+          "description": "Primitives usuelles, intégration, calcul d’aires, intégrales de fonctions rationnelles simples.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Trouver une primitive d’une combinaison de fonctions usuelles.",
+                "Calculer une intégrale définie et interpréter géométriquement (aire)."
+              ]
+            },
+            "2": {
+              "name": "Intermédiaire",
+              "objectives": [
+                "Changements de variable simples ; intégration par parties (cas simples).",
+                "Intégration de 1/(ax+b), 1/(x^2+a^2), etc."
+              ]
+            }
+          }
+        },
+        "Fonctions exponentielle et logarithme": {
+          "description": "e^x, ln(x) : propriétés, équations, limites, dérivées et applications.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Utiliser ln(ab)=ln a+ln b ; ln(a^r)=r ln a ; e^{ln x}=x (x>0).",
+                "Résoudre des équations/inéquations simples impliquant ln et e^x."
+              ]
+            },
+            "2": {
+              "name": "Avancé",
+              "objectives": [
+                "Étudier des fonctions du type x↦x e^{-x}, x↦ln(1+x), x↦x^x (domaine).",
+                "Établir des limites classiques : lim_{x→0} ln(1+x)/x=1 ; comparaison exponentielle vs polynômes."
+              ]
+            }
+          }
+        },
+        "Suites numériques (approfondies)": {
+          "description": "Monotone, majorée/minorée, convergence ; suites définies par récurrence.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Étudier convergence/divergence par encadrement/comparaison.",
+                "Utiliser la récurrence pour établir des propriétés de suites."
+              ]
+            }
+          }
+        },
+        "Équations différentielles (1er ordre)": {
+          "description": "Équations différentielles linéaires du 1er ordre y′+ay=b et cas homogène.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Résoudre y′+a y=b (constantes) ; déterminer la solution générale.",
+                "Utiliser conditions initiales pour fixer la constante d’intégration."
+              ]
+            }
+          }
+        },
+        "Arithmétique des entiers": {
+          "description": "PGCD, Bézout, congruences, petits théorèmes (Fermat), résolutions modulo n.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Écrire une identité de Bézout ; caractériser l’existence de solutions d’ax≡b (mod n).",
+                "Appliquer φ(p)=p−1 pour p premier (cas simples)."
+              ]
+            }
+          }
+        },
+        "Nombres complexes (algébrique, trigonométrique, exponentielle)": {
+          "description": "Formes algébrique et trigonométrique, module/argument, forme exponentielle, De Moivre ; géométrie plane complexe.",
+          "niveaux": {
+            "1": {
+              "name": "Algèbre complexe",
+              "objectives": [
+                "Représenter z=a+ib ; calculer |z| et arg(z).",
+                "Passer de la forme algébrique à trigonométrique/exponentielle."
+              ]
+            },
+            "2": {
+              "name": "Puissances et racines",
+              "objectives": [
+                "Utiliser (re^{iθ})^n = r^n e^{inθ}.",
+                "Résoudre z^n = w ; racines n-ièmes de l’unité ; polygones réguliers."
+              ]
+            },
+            "3": {
+              "name": "Géométrie et transformations",
+              "objectives": [
+                "Interpréter affixes de points, droites et cercles ; loci simples.",
+                "Transformations : rotations, homothéties et similitudes via z↦az+b."
+              ]
+            }
+          }
+        },
+        "Structures algébriques (SM A)": {
+          "description": "Lois de composition, groupes (éléments, neutre, inverse), morphismes (aperçu) ; anneaux (cas des entiers mod n).",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Caractériser une loi interne (associativité, commutativité, élément neutre).",
+                "Exemples : (ℝ,+), (ℝ*,×), (ℤ/nℤ, +)."
+              ]
+            },
+            "2": {
+              "name": "Groupes usuels",
+              "objectives": [
+                "Déterminer des inverses ; résoudre des équations dans un groupe abélien.",
+                "Lien avec (ℂ*,×) et les racines de l’unité."
+              ]
+            }
+          }
+        },
+        "Espaces vectoriels (SM A)": {
+          "description": "Espaces vectoriels réels de dimension finie : sous-espaces, combinaisons linéaires, indépendance, bases, dimension.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Vérifier qu’un sous-ensemble est un sous-espace de ℝ^n.",
+                "Tester l’indépendance linéaire, construire une base, calculer la dimension."
+              ]
+            },
+            "2": {
+              "name": "Applications",
+              "objectives": [
+                "Coordonnées dans une base ; changement de base (cas simples).",
+                "Résoudre un système linéaire via interprétation vectorielle."
+              ]
+            }
+          }
+        },
+        "Probabilités (2BAC SM)": {
+          "description": "Probabilités conditionnelles, indépendance, formule des probabilités totales, théorème de Bayes ; loi binomiale.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Utiliser P(A|B)=P(A∩B)/P(B).",
+                "Modéliser un schéma de Bernoulli ; calculer P(X=k) pour X~Bin(n,p)."
+              ]
+            },
+            "2": {
+              "name": "Avancé",
+              "objectives": [
+                "Espérance et variance d’une binomiale ; approximation normale (mention).",
+                "Utiliser Bayes dans des problèmes concrets."
+              ]
+            }
+          }
+        }
+      }
+    },
+    "2ème année BAC — Sciences Mathématiques B": {
+      "themes": {
+        "Analyse (identique à SM A — charge allégée)": {
+          "description": "Limites, continuité, dérivation, primitives/intégrales adaptées à SM B.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Étude de fonctions complètes, asymptotes, optimisation.",
+                "Primitives usuelles et intégrales définies ; aires."
+              ]
+            }
+          }
+        },
+        "Exponentielle & Logarithme": {
+          "description": "Propriétés et applications (charge allégée vs SM A).",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Résoudre des équations avec e^x, ln(x).",
+                "Limites et dérivées de fonctions composées simples."
+              ]
+            }
+          }
+        },
+        "Suites, Équations différentielles (intro)": {
+          "description": "Suites (convergence) ; EDL 1er ordre y′+ay=b (cas standard).",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Convergence/monotonie ; récurrence simple.",
+                "Résoudre y′+a y=b avec condition initiale."
+              ]
+            }
+          }
+        },
+        "Arithmétique & Nombres complexes": {
+          "description": "Divisibilité, congruences ; complexes (forme algébrique/trigonométrique, De Moivre).",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "PGCD, Bézout ; résoudre ax≡b (mod n).",
+                "|z|, arg(z) ; puissances et racines ; interprétation géométrique."
+              ]
+            }
+          }
+        },
+        "Probabilités": {
+          "description": "Univers fini, conditionnelles, loi binomiale.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Arbres pondérés ; P(A∩B), P(A∪B).",
+                "X~Bin(n,p) : P(X=k), E[X], Var(X)."
+              ]
+            }
+          }
+        }
+      }
+    },
+    "2ème année BAC — Sciences Physiques": {
+      "themes": {
+        "Analyse — Limites, dérivation, intégrales": {
+          "description": "Étude de fonctions, dérivation, intégration et applications géométriques.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Étudier variations, tangentes, convexité (cas usuels).",
+                "Calculer primitives et aires ; intégrales simple."
+              ]
+            }
+          }
+        },
+        "Exponentielle & logarithme": {
+          "description": "Fonctions e^x et ln(x) — propriétés et calculs usuels (équations/limites/variations).",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Utiliser ln et e^x dans des modèles (croissance/decroissance).",
+                "Étudier f(x)=x e^{-x}, f(x)=ln(1+x) (domaine, variations)."
+              ]
+            }
+          }
+        },
+        "Suites numériques": {
+          "description": "Suites récurrentes, convergence, monotone.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Montrer convergence par encadrement/monotonie.",
+                "Utiliser récurrence forte/faible pour propriétés élémentaires."
+              ]
+            }
+          }
+        },
+        "Équations différentielles (1er ordre)": {
+          "description": "y′+ay=b (constantes) ; modélisation simple.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Résoudre ED 1er ordre et interpréter la constante via CI.",
+                "Modéliser charge/décharge RC (maths seulement)."
+              ]
+            }
+          }
+        },
+        "Nombres complexes (Partie 1 & 2)": {
+          "description": "Formes algébrique/trigonométrique ; module/argument ; De Moivre ; géométrie complexe.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Calculs avec a+ib ; |z|, arg(z).",
+                "Puissances/racines ; lieux géométriques simples."
+              ]
+            }
+          }
+        },
+        "Géométrie dans l’espace": {
+          "description": "Produit scalaire et vectoriel ; droites et plans ; angles, distances.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Équations cartésiennes/paramétriques de droites et plans.",
+                "Calculer u·v et u×v ; applications à l’orthogonalité et à l’aire."
+              ]
+            }
+          }
+        },
+        "Dénombrement & probabilités": {
+          "description": "Arrangements/combinaisons ; loi binomiale ; conditionnelles et Bayes.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Calculer C(n,k), A(n,k), n!.",
+                "X~Bin(n,p) : P(X=k), E[X], Var(X) ; indépendance et Bayes."
+              ]
+            }
+          }
+        }
+      }
+    },
+    "2ème année BAC — Sciences de la Vie et de la Terre (SVT)": {
+      "themes": {
+        "Analyse (adaptée SVT)": {
+          "description": "Limites, dérivation, intégrales — charge adaptée à SVT.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Étudier des fonctions usuelles, dérivées et variations.",
+                "Calculer des primitives de base et aires simples."
+              ]
+            }
+          }
+        },
+        "Exponentielle & logarithme": {
+          "description": "Propriétés et applications contextuelles (croissance, décroissance).",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Résoudre des équations/inéquations simples avec ln et e^x.",
+                "Étudier des modèles de croissance de population idéalisés."
+              ]
+            }
+          }
+        },
+        "Suites numériques": {
+          "description": "Suites usuelles et récurrentes (convergence).",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Utiliser la monotonie et l’encadrement pour conclure.",
+                "Sommes de suites géométriques."
+              ]
+            }
+          }
+        },
+        "Probabilités & statistiques": {
+          "description": "Dénombrement, probas conditionnelles, loi binomiale ; statistiques descriptives.",
+          "niveaux": {
+            "1": {
+              "name": "Fondamentaux",
+              "objectives": [
+                "Calculer des probabilités dans des expériences finies.",
+                "Moyenne, variance, écart-type ; ajustement linéaire simple."
+              ]
+            }
+          }
+        },
+        "Nombres complexes (bases)": {
+          "description": "Forme algébrique, module, argument (niveau adapté).",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Calculer avec a+ib ; module et argument.",
+                "Interpréter géométriquement un affixe."
+              ]
+            }
+          }
+        },
+        "Géométrie dans l’espace (bases)": {
+          "description": "Vecteurs 3D, droites/plans (bases) ; produit scalaire.",
+          "niveaux": {
+            "1": {
+              "name": "Base",
+              "objectives": [
+                "Équations de plans/droites (cas standard).",
+                "Angles et distances simples."
+              ]
+            }
+          }
+        }
+      }
+    },
+    "Bibliothèque de compétences transversales": {
+      "topics": {
+        "Domaine de définition (révision ciblée)": {
+          "description": "Déterminer le domaine de définition (polynômes, rationnelles, racines, logarithmes).",
+          "niveaux": {
+            "1": {
+              "name": "Débutant",
+              "description": "Bases (polynômes, rationnelles simples).",
+              "objectives": [
+                "Savoir que D_f=ℝ pour un polynôme.",
+                "Exclure les annulateurs de dénominateurs."
+              ],
+              "example_functions": [
+                "f(x)=x^2-3x+1",
+                "f(x)=(7x-1)/(x-6)"
+              ]
+            },
+            "2": {
+              "name": "Intermédiaire",
+              "description": "Cas quadratiques et multiples valeurs interdites.",
+              "objectives": [
+                "Résoudre un dénominateur quadratique pour exclure les racines.",
+                "Traiter (x^2-4x+1) au dénominateur ; union d’intervalles."
+              ],
+              "example_functions": [
+                "f(x)=(3x-2)/(x^2-4x+1)"
+              ]
+            },
+            "3": {
+              "name": "Avancé",
+              "description": "Racines et logarithmes (conditions).",
+              "objectives": [
+                "Imposer 2x+3≥0 sous racine ; x>0 sous ln(x).",
+                "Combiner plusieurs contraintes (intersection d’inégalités)."
+              ],
+              "example_functions": [
+                "f(x)=√(2x+3)-1",
+                "f(x)=√((x^2-4)/(x-1))",
+                "f(x)=ln(x-2)"
+              ]
+            }
+          }
+        },
+        "Calcul des limites (progression complète)": {
+          "description": "Maîtriser les techniques de limites (0/0, ∞/∞, ∞−∞, trigonométriques, quotients rationnels).",
+          "niveaux": {
+            "1": {
+              "name": "Introduction",
+              "description": "Notion de limite ; limites polynomiales en un point et à l’infini.",
+              "objectives": [
+                "Comprendre la définition intuitive de limite.",
+                "Calculer des limites de polynômes et fonctions simples."
+              ],
+              "example_functions": [
+                "lim_{x→+∞}(x^2+3x+2)",
+                "lim_{x→2}(3x^2-4x+1)",
+                "lim_{x→-∞}(-2x^3+x-5)"
+              ]
+            },
+            "2": {
+              "name": "Fractions rationnelles",
+              "description": "Simplification, factorisation, comparaison des degrés.",
+              "objectives": [
+                "Factoriser pour lever 0/0.",
+                "Comparer degrés numérateur/dénominateur pour x→±∞."
+              ],
+              "example_functions": [
+                "lim_{x→1}(x^2-1)/(x-1)",
+                "lim_{x→+∞}(2x^3+x)/(3x^3+2)"
+              ]
+            },
+            "3": {
+              "name": "Forme 0/0 basique",
+              "description": "Factorisation et simplification.",
+              "objectives": [
+                "Identifier 0/0 ; factoriser (x^2-4)=(x-2)(x+2).",
+                "Utiliser identité remarquable et dérivées (L’Hôpital — mention si autorisé)."
+              ],
+              "example_functions": [
+                "lim_{x→2}(x^2-4)/(x-2)",
+                "lim_{x→1}(x^3-1)/(x-1)",
+                "lim_{x→0} sin x / x"
+              ]
             },
             "4": {
-                "name": "Forme ∞/∞",
-                "description": "Étude des quotients à l'infini",
-                "objectives": [
-                    "Identifier la forme indéterminée ∞/∞",
-                    "Diviser par le plus haut degré",
-                    "Analyser les termes dominants"
-                ],
-                "example_functions": [
-                    "lim(x→∞) (x^2 + 1)/(x + 1)",
-                    "lim(x→∞) (3x^3 + x)/(2x^3 - 4)",
-                    "lim(x→-∞) (x^2 + x)/(x^2 - 1)"
-                ]
+              "name": "Forme ∞/∞",
+              "description": "Division par le terme dominant.",
+              "objectives": [
+                "Diviser par x^n ; analyser termes dominants.",
+                "Utiliser comparaisons pour limites à l’infini."
+              ],
+              "example_functions": [
+                "lim_{x→∞}(x^2+1)/(x+1)",
+                "lim_{x→∞}(3x^3+x)/(2x^3-4)",
+                "lim_{x→-∞}(x^2+x)/(x^2-1)"
+              ]
             },
             "5": {
-                "name": "Forme ∞-∞",
-                "description": "Différence de termes infinis",
-                "objectives": [
-                    "Reconnaître une différence de termes infinis",
-                    "Appliquer la méthode de rationalisation",
-                    "Factoriser après rationalisation"
-                ],
-                "example_functions": [
-                    "lim(x→∞) (√(x^2 + 1) - x)",
-                    "lim(x→∞) (√(x^2 + x) - x)"
-                ]
+              "name": "Forme ∞−∞",
+              "description": "Rationalisation et factorisation ensuite.",
+              "objectives": [
+                "Multiplier par le conjugué pour √(x^2+…)-x.",
+                "Isoler les termes dominants après rationalisation."
+              ],
+              "example_functions": [
+                "lim_{x→∞}(√(x^2+1)-x)",
+                "lim_{x→∞}(√(x^2+x)-x)"
+              ]
             },
             "6": {
-                "name": "Formes trigonométriques",
-                "description": "Calcul des limites impliquant des fonctions trigonométriques.",
-                "objectives": [
-                    "Évaluer les limites contenant des fonctions trigonométriques de base",
-                    "Appliquer des identités trigonométriques dans le calcul des limites",
-                    "Gérer les formes indéterminées avec des expressions trigonométriques"
-                ],
-                "example_functions": [
-                    "lim(x→0) sin(x)/x",
-                    "lim(x→0) (1 - cos(x))/x^2"
-                ]
+              "name": "Trigonométriques",
+              "description": "Identités et limites remarquables.",
+              "objectives": [
+                "Utiliser lim_{x→0} sin x / x =1 ; (1−cos x)/x^2 = 1/2.",
+                "Combiner identités pour lever les indéterminations."
+              ],
+              "example_functions": [
+                "lim_{x→0} sin x / x",
+                "lim_{x→0} (1−cos x)/x^2"
+              ]
             },
             "7": {
-                "name": "Cas composés",
-                "description": "Évaluation des limites de fonctions composites et mixtes.",
-                "objectives": [
-                    "Évaluer les limites de fonctions composites",
-                    "Appliquer plusieurs lois de limites dans des scénarios complexes",
-                    "Gérer les formes indéterminées mixtes"
-                ],
-                "example_functions": [
-                    "lim(x→∞) x·sin(1/x)",
-                    "lim(x→0) (1 - cos(x))/x^2"
-                ]
+              "name": "Cas composés",
+              "description": "Fonctions composites et mélanges de techniques.",
+              "objectives": [
+                "Évaluer x·sin(1/x) quand x→∞ ou 0.",
+                "Enchaîner plusieurs lois de limites dans des cas mixtes."
+              ],
+              "example_functions": [
+                "lim_{x→∞} x·sin(1/x)",
+                "lim_{x→0} (1−cos x)/x^2"
+              ]
             }
+          }
         }
+      }
     }
+  }
 }

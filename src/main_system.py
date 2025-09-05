@@ -13,7 +13,7 @@ from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 from crewai import Task
 
-from src.models.models import Exercise, EvaluationResult, StudentProfile, CoachPersonal
+from src.models.models import Exercise, EvaluationResult, StudentProfile, CoachPersonal,PersonalizedCoachMessage
 from src.agents.exercise_creator_agent import ExerciseCreatorAgent
 from src.agents.evaluator_agent import EvaluatorAgent
 from src.agents.personal_coach_agent import PersonalCoachAgent
@@ -23,6 +23,7 @@ from src.tools.file_processor import FileProcessor
 from src.config.learning_objectives import LearningObjectives
 from src.student_manager import StudentManager
 from langchain_community.chat_models import ChatOllama
+from src.session_manager import SessionManager
 
 load_dotenv()
 
@@ -32,7 +33,7 @@ class MathTutoringSystem:
         self.llm = self._initialize_llm()
         
         self.file_processor = FileProcessor()
-        self.student_manager = StudentManager()
+        self.session_manager = SessionManager()
         self.learning_objectives = LearningObjectives()
         self.current_student: Optional[StudentProfile] = None
 
@@ -55,33 +56,58 @@ class MathTutoringSystem:
             console.print(f"Mode hors ligne activé: {str(e)}")
             return None
 
-    def set_current_student(self, student_id: str):
-        self.current_student = self.student_manager.load_student(student_id)
-        if self.current_student and self.student_manager.long_term_memory:
-            self._load_initial_memories()
+    def set_current_student(self, student_id: str, student_name: Optional[str] = None):
+        """Utilise le SessionManager au lieu de charger directement"""
+        session = self.session_manager.get_or_create_session(student_id, student_name)
+        self.current_student = session.student_profile
+        
+        # Charger les mémoires initiales si disponible
+        if session.memory:
+            self._load_initial_memories_from_session(session)
 
-    def _load_initial_memories(self):
-        if not self.current_student or not self.student_manager.long_term_memory:
+    def _load_initial_memories_from_session(self, session):
+        """Charge les mémoires depuis la session (déjà synchronisées)"""
+        if not session.memory:
             return
         
-        # Ajouter les objectifs complétés comme mémoires
-        for obj in self.current_student.objectives_completed:
-            self.student_manager.long_term_memory.add_memory(
-                content=f"Objectif complété: {obj}",
-                metadata={"type": "achievement", "objective": obj}
+        # Les mémoires sont déjà synchronisées automatiquement par le SessionManager
+        # Ici on peut optionnellement récupérer des mémoires spécifiques si nécessaire
+        try:
+            # Exemple : récupérer les dernières réussites pour contextualiser
+            recent_achievements = session.memory.query_memory(
+                query_texts=["objectif complété", "achievement"],
+                n_results=5
             )
+            if recent_achievements:
+                console.print(f"📚 {len(recent_achievements)} mémoires chargées pour contextualisation")
+        except Exception as e:
+            console.print(f"⚠️ Erreur chargement mémoires contextuelles: {str(e)}")
             
-        # Ajouter l'historique d'apprentissage
-        for item in self.current_student.learning_history:
-            self.student_manager.long_term_memory.add_memory(
-                content=f"Exercice: {item['exercise']} - Réponse: {item['answer']}",
-                metadata={
-                    "type": "exercise",
-                    "correct": str(item["evaluation"]),
-                    "timestamp": item["timestamp"]
-                }
-            )
+    def save_current_student(self) -> bool:
+        """Sauvegarde l'étudiant actuel via le SessionManager"""
+        if not self.current_student:
+            return False
+        
+        return self.session_manager.save_session(self.current_student.student_id)
 
+    def add_exercise_to_history(self, exercise: Exercise, answer: str, is_correct: bool):
+        """Ajoute un exercice à l'historique de l'étudiant actuel"""
+        if not self.current_student:
+            return
+        
+        history_item = {
+            "exercise": exercise.exercise,
+            "answer": answer,
+            "evaluation": is_correct,
+            "timestamp": datetime.now().isoformat(),
+            "concept": exercise.concept
+        }
+        
+        self.current_student.learning_history.append(history_item)
+        
+        # Sauvegarder automatiquement
+        self.save_current_student()
+        
     def get_current_objective_info(self):
         if not self.current_student:
             return None
@@ -90,13 +116,16 @@ class MathTutoringSystem:
         if not objective:
             return None
         
-        level_info = objective["niveaux"].get(str(self.current_student.level), {})
         return {
             "description": objective.get("description", ""),
-            "level_name": level_info.get("name", ""),
-            "total_levels": len(objective["niveaux"]),
-            "objectives": level_info.get("objectives", [])
+            "level_name": objective.get("level_name", ""),
+            "total_levels": sum(
+                len(theme.get("niveaux", {})) for cycle in self.learning_objectives.objectives.values()
+                for theme in cycle.values()
+            ),
+            "objectives": objective.get("objectives", [])
         }
+
 
     def get_student_progress(self):
         if not self.current_student:
@@ -236,22 +265,26 @@ class MathTutoringSystem:
             console.print("Aucun étudiant ou objectif défini")
             return None
 
-        objective_data = self.learning_objectives.objectives.get(self.current_student.current_objective)
+        objective_data = self.learning_objectives.objectives.get(self.current_student.current_objective, {})
+
         if not objective_data:
-            console.print(f"Objectif non trouvé: {self.current_student.current_objective}")
             return None
 
-        level_info = objective_data["niveaux"].get(str(self.current_student.level))
-        if not level_info:
-            console.print(f"Niveau non trouvé: {self.current_student.level}")
-            return None
+        # Plus de "niveaux", les infos sont déjà au bon niveau
+        level_info = {
+            "level": objective_data.get("level"),
+            "level_name": objective_data.get("level_name"),
+            "objectives": objective_data.get("objectives", []),
+            "example_exercises": objective_data.get("example_exercises", []),
+            "example_functions": objective_data.get("example_functions", [])
+        }
 
         # Exercice par défaut en cas d'échec avec délimiteurs mathématiques
         default_exercise = Exercise(
             exercise=f"Résoudre l'équation suivante: $x + 5 = 12$",
             solution=f"Pour résoudre $x + 5 = 12$, on soustrait 5 des deux côtés: $x = 12 - 5 = 7$",
             hints=["Isolez la variable x", "Utilisez les opérations inverses"],
-            difficulty=level_info["name"],
+            difficulty=level_info["level_name"],
             concept=self.current_student.current_objective
         )
 
@@ -266,7 +299,7 @@ Tu dois créer un exercice de mathématiques au format JSON STRICT avec expressi
 
 CONTEXTE:
 - Objectif: {objective_data["description"]}
-- Niveau: {level_info["name"]} 
+- Niveau: {level_info["level_name"]} 
 - Type: {self.current_student.current_objective}
 - Exemple basé sur: {level_info["example_functions"][0] if level_info.get("example_functions") else "fonctions de base"}
 
@@ -286,7 +319,7 @@ FORMAT EXACT REQUIS:
   "exercise": "Énoncé avec expressions mathématiques délimitées par $ ou $$",
   "solution": "Solution détaillée avec expressions mathématiques délimitées",
   "hints": ["Indice 1 avec $math$ si nécessaire", "Indice 2", "Indice 3"],
-  "difficulty": "{level_info["name"]}",
+  "difficulty": "{level_info["level_name"]}",
   "concept": "{self.current_student.current_objective}"
 }}
 
@@ -635,12 +668,27 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, aucun texte supplémentaire.
             return True
         
         return False
+    
+    
+    def get_session_stats(self) -> dict:
+        """Récupère les statistiques des sessions actives"""
+        return self.session_manager.get_sessions_info()
 
+    def cleanup_expired_sessions(self) -> int:
+        """Nettoie les sessions expirées (peut être appelé manuellement)"""
+        return self.session_manager.cleanup_expired_sessions()
+
+    def shutdown(self):
+        """Arrêt propre du système avec sauvegarde des sessions"""
+        console.print("🛑 Arrêt du système de tutorat...")
+        if hasattr(self, 'session_manager'):
+            self.session_manager.shutdown()
+        console.print("✅ Système arrêté proprement")
+
+    
+    
     def advance_to_next_objective(self) -> bool:
-        """
-        Fait passer l'étudiant à l'objectif suivant
-        Retourne True si la progression a eu lieu, False sinon
-        """
+        """Version mise à jour avec sauvegarde via SessionManager"""
         if not self.current_student or not self.current_student.current_objective:
             return False
         
@@ -665,18 +713,18 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, aucun texte supplémentaire.
             if self.current_student.level < 4:  # Maximum niveau 4
                 self.current_student.level += 1
             
-            # Sauvegarder les changements
-            self.student_manager.save_student(self.current_student)
+            # Sauvegarder les changements via SessionManager
+            self.save_current_student()
             
             console.print(f"✅ Progression vers: {next_objective} (Niveau {self.current_student.level})")
             return True
         else:
             # Tous les objectifs sont terminés
             self.current_student.current_objective = None
-            self.student_manager.save_student(self.current_student)
+            self.save_current_student()
             console.print("🎉 Tous les objectifs ont été complétés !")
             return False
-
+        
     def get_progression_status(self) -> dict:
         """
         Retourne le statut de progression détaillé
@@ -931,7 +979,210 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, aucun texte supplémentaire.
             }
         
         return api_result
+    
+    def get_personalized_coach_message(self, exercise: Optional[Exercise] = None, 
+                                    student_answer: Optional[str] = None,
+                                    evaluation: Optional[EvaluationResult] = None) -> Optional[PersonalizedCoachMessage]:
+        """
+        Génère un message de coaching personnalisé basé sur l'exercice et la réponse de l'étudiant
+        """
+        if not self.personal_coach_agent or not self.llm:
+            return self._create_fallback_personalized_coaching()
+        
+        try:
+            # Construire le contexte pour le coach
+            context_parts = []
+            
+            if exercise:
+                context_parts.append(f"EXERCICE: {exercise.exercise}")
+                context_parts.append(f"SOLUTION ATTENDUE: {exercise.solution}")
+                context_parts.append(f"CONCEPT: {exercise.concept}")
+                context_parts.append(f"DIFFICULTÉ: {exercise.difficulty}")
+            
+            if student_answer:
+                context_parts.append(f"RÉPONSE DE L'ÉTUDIANT: {student_answer}")
+            
+            if evaluation:
+                context_parts.append(f"ÉVALUATION: {'Correcte' if evaluation.is_correct else 'Incorrecte'}")
+                if evaluation.error_type:
+                    context_parts.append(f"TYPE D'ERREUR: {evaluation.error_type}")
+            
+            # Ajouter l'historique de l'étudiant pour plus de contexte
+            if self.current_student and self.current_student.learning_history:
+                recent_history = self.current_student.learning_history[-5:]  # 5 derniers exercices
+                success_rate = sum(1 for h in recent_history if h.get('evaluation', False)) / len(recent_history)
+                context_parts.append(f"TAUX DE RÉUSSITE RÉCENT: {success_rate:.1%}")
+                context_parts.append(f"NIVEAU ÉTUDIANT: {self.current_student.level}")
+                context_parts.append(f"OBJECTIF ACTUEL: {self.current_student.current_objective}")
+            
+            context_str = "\n".join(context_parts)
+            
+            task = Task(
+                description=f"""
+    Tu es un coach mathématique IA personnalisé. Génère un message de coaching adapté à la situation spécifique de l'étudiant.
 
+    CONTEXTE DE L'ÉTUDIANT:
+    {context_str}
+
+    ANALYSE REQUISE:
+    1. Analyse la réponse de l'étudiant par rapport à l'exercice
+    2. Identifie ses forces et faiblesses spécifiques
+    3. Adapte le coaching à son niveau et ses besoins
+
+    COACHING PERSONNALISÉ REQUIS:
+    1. **motivation**: Message motivant basé sur sa performance actuelle
+    2. **strategy**: Stratégie spécifique pour améliorer ses points faibles identifiés
+    3. **tip**: Astuce ciblée pour le concept mathématique en question
+    4. **encouragement**: Liste de phrases positives adaptées à sa situation
+    5. **next_steps**: Liste d'étapes concrètes recommandées pour progresser
+
+    RÈGLES POUR LES EXPRESSIONS MATHÉMATIQUES:
+    - Encadrer avec $ pour inline ou $$ pour bloc
+    - Doubles backslashes: \\\\frac{{a}}{{b}}
+
+    EXEMPLES D'ADAPTATION:
+    - Si l'étudiant a fait une erreur de calcul → Focus sur la méthode, pas juste la motivation
+    - Si l'étudiant a la bonne approche mais mauvaise exécution → Encourager l'approche, corriger l'exécution
+    - Si l'étudiant est complètement perdu → Décomposer en étapes plus simples
+    - Si l'étudiant réussit bien → Défis plus avancés
+
+    FORMAT JSON EXACT:
+    {{
+    "motivation": "Message motivant personnalisé basé sur sa performance",
+    "strategy": "Stratégie spécifique pour ses besoins identifiés",
+    "tip": "Astuce ciblée pour le concept avec expressions mathématiques délimitées",
+    "encouragement": ["Encouragement spécifique 1", "Encouragement spécifique 2", "Encouragement spécifique 3"],
+    "next_steps": ["Étape concrète 1", "Étape concrète 2", "Étape concrète 3"]
+    }}
+
+    IMPORTANT: Réponds UNIQUEMENT avec le JSON valide, sois spécifique et personnalisé.
+                """,
+                agent=self.personal_coach_agent,
+                expected_output="Message de coaching personnalisé au format JSON"
+            )
+            
+            crew = Crew(
+                agents=[self.personal_coach_agent],
+                tasks=[task],
+                process=Process.sequential,
+                verbose=True
+            )
+            
+            result = crew.kickoff()
+            
+            # Extraire le texte du résultat
+            result_text = ""
+            if hasattr(result, 'raw'):
+                result_text = str(result.raw)
+            else:
+                result_text = str(result)
+            
+            # Parser le coaching depuis le texte
+            coaching = self._parse_personalized_coaching_from_text(result_text)
+            return coaching if coaching else self._create_fallback_personalized_coaching()
+            
+        except Exception as e:
+            console.print(f"Erreur génération coaching personnalisé: {str(e)}")
+            return self._create_fallback_personalized_coaching()
+
+    def _parse_personalized_coaching_from_text(self, text: str) -> Optional[PersonalizedCoachMessage]:
+        """Parse un message de coaching personnalisé depuis le texte de sortie"""
+        try:
+            # Chercher un JSON dans le texte
+            json_match = re.search(r'\{.*\}', text, re.DOTALL)
+            if json_match:
+                json_str = json_match.group()
+                
+                # Nettoyer les échappements LaTeX problématiques
+                json_str = self._clean_latex_escapes(json_str)
+                
+                coaching_data = json.loads(json_str)
+                return PersonalizedCoachMessage(**coaching_data)
+            
+            return None
+            
+        except Exception as e:
+            console.print(f"Erreur parsing coaching personnalisé: {str(e)}")
+            console.print(f"Texte problématique: {text[:500]}...")
+            return None
+
+    def _create_fallback_personalized_coaching(self) -> PersonalizedCoachMessage:
+        return PersonalizedCoachMessage(
+            motivation="Continue tes efforts, chaque étape compte dans ton apprentissage !",
+            strategy="Essaie de décomposer les problèmes complexes en étapes plus simples et gérables.",
+            tip="N'hésite pas à refaire les exercices pour bien maîtriser les concepts.",
+            encouragement=["Tu progresses bien !", "La persévérance est la clé du succès en mathématiques.", "Chaque erreur est une opportunité d'apprendre."],
+            next_steps=["Révise les concepts de base", "Pratique avec des exercices similaires", "N'hésite pas à demander de l'aide"]
+        )
+        
+        
+        
+    def evaluate_answer_for_api_with_coaching(self, exercise_data: dict, answer: str, student_id: str) -> dict:
+        """Version API d'évaluation avec coaching personnalisé et gestion de session"""
+        # Utiliser set_current_student qui gère maintenant les sessions
+        self.set_current_student(student_id)
+        
+        # Créer un objet Exercise à partir des données
+        exercise = Exercise(
+            exercise=exercise_data.get("exercise", ""),
+            solution=exercise_data.get("solution", ""),
+            hints=exercise_data.get("hints", []),
+            difficulty=exercise_data.get("difficulty", ""),
+            concept=exercise_data.get("concept", "")
+        )
+        
+        # Évaluer la réponse
+        evaluation = self.evaluate_response(exercise, answer)
+        
+        # Générer le coaching personnalisé
+        personalized_coaching = self.get_personalized_coach_message(
+            exercise=exercise,
+            student_answer=answer,
+            evaluation=evaluation
+        )
+        
+        # Ajouter à l'historique avec sauvegarde automatique
+        self.add_exercise_to_history(exercise, answer, evaluation.is_correct)
+        
+        # Vérifier la progression
+        progression_result = self.auto_check_and_advance()
+        
+        # Retourner le résultat complet avec coaching personnalisé
+        api_result = {
+            "evaluation": {
+                "is_correct": evaluation.is_correct,
+                "feedback": evaluation.feedback if hasattr(evaluation, 'feedback') else evaluation.detailed_explanation,
+                "explanation": evaluation.detailed_explanation if hasattr(evaluation, 'detailed_explanation') else evaluation.feedback,
+                "correct_answer": exercise.solution,
+                "error_type": evaluation.error_type if hasattr(evaluation, 'error_type') else None,
+                "recommendations": evaluation.recommendations if hasattr(evaluation, 'recommendations') else []
+            },
+            "personalized_coaching": {
+                "motivation": personalized_coaching.motivation,
+                "strategy": personalized_coaching.strategy,
+                "tip": personalized_coaching.tip,
+                "encouragement": personalized_coaching.encouragement,
+                "next_steps": personalized_coaching.next_steps
+            } if personalized_coaching else None,
+            "session_info": {
+                "session_active": True,
+                "last_activity": datetime.now().isoformat(),
+                "exercises_completed": len(self.current_student.learning_history)
+            }
+        }
+        
+        # Ajouter les informations de progression si applicable
+        if progression_result["progression_occurred"]:
+            api_result["progression"] = {
+                "level_up": True,
+                "new_objective": progression_result["new_objective"],
+                "new_level": progression_result["new_level"],
+                "message": progression_result["message"]
+            }
+        
+        return api_result
+    
+    
 
 if __name__ == "__main__":
     system = MathTutoringSystem()

@@ -36,3 +36,12 @@ class CoachPersonal(BaseModel):
     tip: str = Field(..., description="astuce pratique")
     encouragement: List[str] = Field(..., description="phrase positive")
 
+from pydantic import BaseModel
+from typing import Optional, List, Dict
+
+class PersonalizedCoachMessage(BaseModel):
+    motivation: str
+    strategy: str
+    tip: str
+    encouragement: List[str]
+    next_steps: List[str]   # Nouveau : étapes recommandées
